@@ -9,7 +9,7 @@ import json
 db = SQLAlchemy()
 
 DATABASE_URI = os.getenv('DATABASE_URI')
-database_path = os.environ['DATABASE_URL']
+database_path = os.environ['DATABASE_URI']
 if database_path.startswith("postgres://"):
   database_path = database_path.replace("postgres://", "postgresql://", 1)
 
@@ -85,7 +85,7 @@ class Actor(db.Model):
     age = Column(Integer(), nullable=False)
     gender = Column(String(), nullable=False)
 
-    def __init__(self, title, release_date):
+    def __init__(self, name, age, gender):
         self.name = name
         self.age = age
         self.gender = gender
