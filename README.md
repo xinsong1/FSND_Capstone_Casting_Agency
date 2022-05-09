@@ -4,6 +4,6 @@ This project is the final project of Full stack Web Developer Nanodegree Program
 ## Reference
 https://github.com/rgrishigajra/FSND-Capstone-Casting-agency
 
-## Authors
+## Author
 
 Xin Song
