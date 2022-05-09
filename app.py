@@ -3,14 +3,15 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import traceback
-from models import setup_db, Movie, Actor
+from models import setup_db, setup_migrations, Movie, Actor
 import datetime
-
+from auth import requires_auth, AuthError
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     setup_db(app)
+    setup_migrations(app)
     CORS(app)
 
     '''
@@ -55,7 +56,8 @@ def create_app(test_config=None):
     for all available movies
     '''
     @app.route('/movies')
-    def get_movies():
+    @requires_auth('view:movies')
+    def get_movies(jwt):
         print("\n\nGet movies api hit:\n\n")
         try:
             movies = Movie.query.order_by(Movie.id).all()
@@ -73,7 +75,8 @@ def create_app(test_config=None):
     the endpoint to DELETE movie using a movie ID.
     '''
     @app.route("/movies/<int:movie_id>", methods=["DELETE"])
-    def delete_movie(movie_id):
+    @requires_auth('delete:movies')
+    def delete_movie(jwt,movie_id):
         print("Delete api on /movie hit:\n\n")
 
         movie = Movie.query.filter(Movie.id == movie_id).one_or_none()
@@ -107,7 +110,8 @@ def create_app(test_config=None):
     which will require the title and release_date
     '''
     @app.route('/movies', methods=['POST'])
-    def create_movie():
+    @requires_auth('add:movies')
+    def create_movie(jwt):
         print("Post api on /movies hit:\n\n")
         data = request.get_json()
         print(data, '\n\n')
@@ -136,7 +140,8 @@ def create_app(test_config=None):
     The endpoint to PATCH a movie based on movie_id
     '''
     @app.route('/movies/<int:movie_id>', methods=['PATCH'])
-    def modify_movie(movie_id):
+    @requires_auth('patch:movies')
+    def modify_movie(jwt,movie_id):
         print("patch api on movie hit:\n\n")
         data = request.get_json()
         if data is None:
@@ -170,7 +175,8 @@ def create_app(test_config=None):
     for all available actors
     '''
     @app.route('/actors')
-    def get_actors():
+    @requires_auth('view:actors')
+    def get_actors(jwt):
         print("\n\nGet actors api hit:\n\n")
         try:
             actors = Actor.query.order_by(Actor.id).all()
@@ -188,7 +194,8 @@ def create_app(test_config=None):
     the endpoint to DELETE actor using a actor ID.
     '''
     @app.route("/actors/<int:actor_id>", methods=["DELETE"])
-    def delete_actor(actor_id):
+    @requires_auth('delete:actors')
+    def delete_actor(jwt,actor_id):
         print("Delete api on /actor hit:\n\n")
 
         actor = Actor.query.filter(Actor.id == actor_id).one_or_none()
@@ -223,7 +230,8 @@ def create_app(test_config=None):
     which will require the name, age and gender
     '''
     @app.route('/actors', methods=['POST'])
-    def create_actor():
+    @requires_auth('add:actors')
+    def create_actor(jwt):
         print("Post api on /actors hit:\n\n")
         data = request.get_json()
         print(data, '\n\n')
@@ -253,7 +261,8 @@ def create_app(test_config=None):
     The endpoint to PATCH a actor based on actor_id
     '''
     @app.route('/actors/<int:actor_id>', methods=['PATCH'])
-    def modify_actor(actor_id):
+    @requires_auth('patch:actors')
+    def modify_actor(jwt,actor_id):
         print("patch api on /actors hit:\n\n")
 
         data = request.get_json()
@@ -354,5 +363,5 @@ def create_app(test_config=None):
 APP = create_app()
 
 if __name__ == '__main__':
-    # APP.run(host='0.0.0.0', port=8080, debug=True)
-    APP.run()
+    APP.run(port=8080, debug=True)
+    # APP.run()

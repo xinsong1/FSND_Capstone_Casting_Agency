@@ -6,9 +6,9 @@ from models import setup_db, Movie, Actor
 from app import create_app
 
 TEST_DATABASE_URI = os.getenv('TEST_DATABASE_URI')
-# ASSISTANT_TOKEN = os.getenv('ASSISTANT_TOKEN')
-# DIRECTOR_TOKEN = os.getenv('DIRECTOR_TOKEN')
-# PRODUCER_TOKEN = os.getenv('PRODUCER_TOKEN')
+ASSISTANT_TOKEN = os.getenv('ASSISTANT_TOKEN')
+DIRECTOR_TOKEN = os.getenv('DIRECTOR_TOKEN')
+PRODUCER_TOKEN = os.getenv('PRODUCER_TOKEN')
 
 
 class CastingAgencyTestCase(unittest.TestCase):
@@ -18,9 +18,9 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         setup_db(self.app, TEST_DATABASE_URI)
-        # self.casting_assistant = ASSISTANT_TOKEN
-        # self.casting_director = DIRECTOR_TOKEN
-        # self.executive_producer = PRODUCER_TOKEN
+        self.assistant = ASSISTANT_TOKEN
+        self.director = DIRECTOR_TOKEN
+        self.producer = PRODUCER_TOKEN
         with self.app.app_context():
             self.db = SQLAlchemy()
             self.db.init_app(self.app)
@@ -37,7 +37,11 @@ class CastingAgencyTestCase(unittest.TestCase):
     '''
 
     def test_get_movies(self):
-        res = self.client().get('/movies')
+        res = self.client().get('/movies',
+                                headers={
+                                    "Authorization": "Bearer {}"
+                                    .format(self.assistant)
+                                })
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -45,7 +49,10 @@ class CastingAgencyTestCase(unittest.TestCase):
 
     def test_delete_movie(self):
         movie = Movie.query.order_by(Movie.id).first()
-        res = self.client().delete('/movies/'+str(movie.id))
+        res = self.client().delete('/movies/'+str(movie.id),
+                                   headers={
+                                   "Authorization": "Bearer {}"
+                                   .format(self.producer)})
         data = json.loads(res.data)
         print(data)
         self.assertTrue(data['success'])
@@ -54,12 +61,20 @@ class CastingAgencyTestCase(unittest.TestCase):
 
 
     def test_delete_movie_fail_404(self):
-        res = self.client().delete('/movies/1000')
+        res = self.client().delete('/movies/1000',
+                                   headers={
+                                   "Authorization": "Bearer {}"
+                                   .format(self.producer)})
         data = json.loads(res.data)
         # print(data)
         self.assertFalse(data['success'])
         self.assertEqual(404, res.status_code)
 
+    def test_delete_movie_fail_401(self):
+        res = self.client().delete('/movies/1000')
+        data = json.loads(res.data)
+        self.assertFalse(data['success'])
+        self.assertEqual(401, res.status_code)
 
     def test_post_movies(self):
         movie = {
@@ -67,7 +82,11 @@ class CastingAgencyTestCase(unittest.TestCase):
             "release_date": "2019-01-02"
         }
 
-        res = self.client().post('/movies', json=movie)
+        res = self.client().post('/movies',
+                                 headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.producer)
+                                 }, json=movie)
 
         data = json.loads(res.data)
         print(data)
@@ -81,12 +100,35 @@ class CastingAgencyTestCase(unittest.TestCase):
         movie = {
             "title": "Avengers"
         }
-        res = self.client().post('/movies', json=movie)
+        res = self.client().post('/movies',
+                                 headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.producer)
+                                 }, json=movie)
         data = json.loads(res.data)
         # print(data)
         self.assertFalse(data['success'])
         self.assertEqual(400, res.status_code)
         self.assertNotEqual(len(data['message']), 'Bad request')
+
+    def test_post_movies_fail_401(self):
+        movie = {
+            "title": "Avengers",
+            "release_date": "2019-01-02"
+        }
+
+        res = self.client().post('/movies',
+                                 headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.assistant)
+                                     }, json=movie)
+
+        data = json.loads(res.data)
+        print(data)
+        self.assertTrue(data['success'])
+        movie_db = Movie.query.get(data['movie_id'])
+        movie['id'] = data['movie_id']
+        self.assertEqual(movie_db.get_formatted_json(), movie)
 
 
     def test_patch_movie(self):
@@ -96,7 +138,11 @@ class CastingAgencyTestCase(unittest.TestCase):
         }
         movie = Movie.query.order_by(Movie.id).first()
         print(movie)
-        res = self.client().patch('/movies/'+str(movie.id), json=movie_patch)
+        res = self.client().patch('/movies/'+str(movie.id),
+                                  headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.director)
+                                     }, json=movie_patch)
         data = json.loads(res.data)
         print(data)
         self.assertTrue(data['success'])
@@ -107,11 +153,15 @@ class CastingAgencyTestCase(unittest.TestCase):
             self.assertEqual(movie_patch[key], movie_json[key])
 
     def test_patch_movie_fail_404(self):
-        movie = {
+        movie_patch = {
             "title": "Avengers",
             "release_date": "2019-01-02",
         }
-        res = self.client().patch('/movies/1000', json=movie)
+        res = self.client().patch('/movies/1000',
+                                  headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.director)
+                                     }, json=movie_patch)
         data = json.loads(res.data)
         print(data)
         self.assertFalse(data['success'])
@@ -124,7 +174,11 @@ class CastingAgencyTestCase(unittest.TestCase):
     # test for actors
 
     def test_get_actors(self):
-        res = self.client().get('/actors')
+        res = self.client().get('/actors',
+                               headers={
+                                   "Authorization": "Bearer {}"
+                                   .format(self.assistant)
+                               })
         data = json.loads(res.data)
         print(data)
         res.status_code == 200
@@ -133,7 +187,10 @@ class CastingAgencyTestCase(unittest.TestCase):
 
     def test_delete_actors(self):
         actor = Actor.query.order_by(Actor.id).first()
-        res = self.client().delete('/actors/'+str(actor.id))
+        res = self.client().delete('/actors/'+str(actor.id),
+                                   headers={
+                                   "Authorization": "Bearer {}"
+                                   .format(self.producer)})
         data = json.loads(res.data)
         print(data)
         self.assertTrue(data['success'])
@@ -143,7 +200,10 @@ class CastingAgencyTestCase(unittest.TestCase):
 
 
     def test_delete_actor_fail_404(self):
-        res = self.client().delete('/actors/1000')
+        res = self.client().delete('/actors/1000',
+                                  headers={
+                                  "Authorization": "Bearer {}"
+                                  .format(self.producer)})
         data = json.loads(res.data)
         # print(data)
         self.assertFalse(data['success'])
@@ -157,21 +217,29 @@ class CastingAgencyTestCase(unittest.TestCase):
             "age": 31,
         }
 
-        res = self.client().post('/actors', json=actor)
+        res = self.client().post('/actors',
+                                 headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.producer)
+                                 }, json=actor)
         data = json.loads(res.data)
         print(data)
         self.assertTrue(data['success'])
         actor_db = Actor.query.get(data['actor_id'])
         actor['id'] = data['actor_id']
         self.assertEqual(actor_db.get_formatted_json(), actor)
-        
+
 
     def test_post_actors_fail_400(self):
         actor = {
             "name": "xiaoma",
             "gender": "male",
         }
-        res = self.client().post('/actors', json=actor)
+        res = self.client().post('/actors',
+                                 headers={
+                                     "Authorization": "Bearer {}"
+                                     .format(self.producer)
+                                 }, json=actor)
         data = json.loads(res.data)
         # print(data)
         self.assertFalse(data['success'])
@@ -184,7 +252,11 @@ class CastingAgencyTestCase(unittest.TestCase):
             "gender": "male",
         }
         actor_db = Actor.query.order_by(Actor.id).first()
-        res = self.client().patch('/actors/'+str(actor_db.id), json=actor)
+        res = self.client().patch('/actors/'+str(actor_db.id),
+                                  headers={
+                                  "Authorization": "Bearer {}"
+                                  .format(self.director)
+                                  }, json=actor)
         data = json.loads(res.data)
         print(data)
         self.assertTrue(data['success'])
@@ -200,7 +272,11 @@ class CastingAgencyTestCase(unittest.TestCase):
             "name": "yangyang",
             "gender": "male",
         }
-        res = self.client().patch('/actors/1000', json=actor)
+        res = self.client().patch('/actors/1000',
+                                  headers={
+                                  "Authorization": "Bearer {}"
+                                  .format(self.director)
+                                  }, json=actor)
         data = json.loads(res.data)
         print(data)
         self.assertFalse(data['success'])
