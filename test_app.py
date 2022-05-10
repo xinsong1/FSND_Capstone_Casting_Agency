@@ -40,7 +40,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         res = self.client().get('/movies',
                                 headers={
                                     "Authorization": "Bearer {}"
-                                    .format(self.assistant)
+                                    .format(self.producer)
                                 })
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
@@ -141,7 +141,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         res = self.client().patch('/movies/'+str(movie.id),
                                   headers={
                                      "Authorization": "Bearer {}"
-                                     .format(self.director)
+                                     .format(self.producer)
                                      }, json=movie_patch)
         data = json.loads(res.data)
         print(data)
@@ -160,7 +160,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         res = self.client().patch('/movies/1000',
                                   headers={
                                      "Authorization": "Bearer {}"
-                                     .format(self.director)
+                                     .format(self.producer)
                                      }, json=movie_patch)
         data = json.loads(res.data)
         print(data)
@@ -255,7 +255,7 @@ class CastingAgencyTestCase(unittest.TestCase):
         res = self.client().patch('/actors/'+str(actor_db.id),
                                   headers={
                                   "Authorization": "Bearer {}"
-                                  .format(self.director)
+                                  .format(self.producer)
                                   }, json=actor)
         data = json.loads(res.data)
         print(data)
