@@ -96,6 +96,7 @@ implement verify_decode_jwt(token) method
 
 
 def verify_decode_jwt(token):
+    # raise Exception('Not Implemented')
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
@@ -144,10 +145,12 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-        'code': 'invalid_header',
+                'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
-    }, 401)
-    return unverified_header
+            }, 400)
+
+    
+
 
 
 '''
