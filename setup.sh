@@ -1,8 +1,8 @@
 #!/bin/bash
 export FLASK_APP=app.py
 export FLASK_ENV=development
-export TEST_DATABASE_URI="postgres://localhost:5432/casting_agency_test"
-export DATABASE_URI="postgres://localhost:5432/casting_agency"
+export TEST_DATABASE_URL="postgres://localhost:5432/casting_agency_test"
+export DATABASE_URL="postgres://localhost:5432/casting_agency"
 export NEW_VAR="Testing export"
 export EXCITED="true"
 export AUTH0_DOMAIN="fsnd-xins.us.auth0.com"
