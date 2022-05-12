@@ -2,7 +2,8 @@
 export FLASK_APP=app.py
 export FLASK_ENV=development
 export TEST_DATABASE_URL="postgres://localhost:5432/casting_agency_test"
-export DATABASE_URL="postgres://localhost:5432/casting_agency"
+export DATABASE_URL="postgres://gmdlxtqxhxriqq:dd55becbbc3bd2a98566277ea417330cccd3b4e65f94538e870eb1e5652d8677@ec2-54-172-175-251.compute-1.amazonaws.com:5432/d65s4cc8pl42mn"
+export DATABASE_URL_1="postgresql://gmdlxtqxhxriqq:dd55becbbc3bd2a98566277ea417330cccd3b4e65f94538e870eb1e5652d8677@ec2-54-172-175-251.compute-1.amazonaws.com:5432/d65s4cc8pl42mn"
 export NEW_VAR="Testing export"
 export EXCITED="true"
 export AUTH0_DOMAIN="fsnd-xins.us.auth0.com"

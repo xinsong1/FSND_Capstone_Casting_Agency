@@ -8,8 +8,8 @@ import json
 
 db = SQLAlchemy()
 
-DATABASE_URI = os.getenv('DATABASE_URL')
-database_path = os.environ['DATABASE_URL']
+DATABASE_URI = os.getenv('DATABASE_URL_1')
+database_path = os.environ['DATABASE_URL_1']
 if database_path.startswith("postgres://"):
   database_path = database_path.replace("postgres://", "postgresql://", 1)
 
